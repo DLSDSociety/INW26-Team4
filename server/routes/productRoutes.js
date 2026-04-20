@@ -6,13 +6,17 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  validateProduct,        // ← add this
+  validateProduct,
 } = require('../controllers/productController');
+const authMiddleware = require('../middleware/authMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 
 router.get('/', getAllProducts);
 router.get('/:id', getProduct);
-router.post('/', validateProduct, createProduct);  // ← validateProduct added
-router.put('/:id', updateProduct);
-router.delete('/:id', deleteProduct);
+
+// Admin only routes — must be logged in AND be admin
+router.post('/', authMiddleware, adminMiddleware, validateProduct, createProduct);
+router.put('/:id', authMiddleware, adminMiddleware, updateProduct);
+router.delete('/:id', authMiddleware, adminMiddleware, deleteProduct);
 
 module.exports = router;
