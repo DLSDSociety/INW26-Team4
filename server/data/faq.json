@@ -1,0 +1,100 @@
+{
+  "faqs": [
+    {
+      "id": "shipping-time",
+      "q": "How long does delivery take?",
+      "keywords": ["delivery", "shipping", "how long", "days", "arrive", "dispatch"],
+      "a": "Orders are dispatched within 1–2 business days. Standard delivery takes 4–7 business days depending on your pincode. Metro cities are usually faster (2–4 days)."
+    },
+    {
+      "id": "shipping-cost",
+      "q": "How much is shipping?",
+      "keywords": ["shipping cost", "delivery charge", "free shipping", "shipping fee"],
+      "a": "Shipping is free on orders above ₹1000. Orders below ₹1000 have a flat ₹50 shipping charge, shown at checkout before you pay."
+    },
+    {
+      "id": "track-order",
+      "q": "How do I track my order?",
+      "keywords": ["track", "tracking", "where is my order", "order status"],
+      "a": "Log in and go to My Orders to see the live status of every order (pending, paid, processing, shipped, delivered). You can also ask me directly — just say 'where is my latest order'."
+    },
+    {
+      "id": "return-policy",
+      "q": "What is the return policy?",
+      "keywords": ["return", "returns", "send back", "return window"],
+      "a": "Most items can be returned within 7 days of delivery if they are unused and in original packaging. Start a return from the order detail page under My Orders."
+    },
+    {
+      "id": "refund-time",
+      "q": "How long do refunds take?",
+      "keywords": ["refund", "money back", "refund time", "reimburse"],
+      "a": "Once a returned item is received and inspected, refunds are issued to the original payment method within 5–7 business days."
+    },
+    {
+      "id": "payment-methods",
+      "q": "What payment methods are accepted?",
+      "keywords": ["payment", "pay", "upi", "card", "razorpay", "cod", "cash on delivery"],
+      "a": "We accept UPI, credit/debit cards, and net banking through Razorpay (secure online payment). Cash on Delivery is available on eligible orders."
+    },
+    {
+      "id": "payment-safe",
+      "q": "Is online payment safe?",
+      "keywords": ["safe", "secure", "payment security", "card safe"],
+      "a": "Yes. Payments are processed by Razorpay and verified with a server-side signature check. We never store your full card or UPI details on our servers."
+    },
+    {
+      "id": "cancel-order",
+      "q": "Can I cancel my order?",
+      "keywords": ["cancel", "cancellation", "stop order"],
+      "a": "You can cancel an order from its detail page as long as it has not yet been shipped. Once cancelled, any reserved stock is released automatically."
+    },
+    {
+      "id": "order-not-paid",
+      "q": "My order says unpaid — what do I do?",
+      "keywords": ["unpaid", "payment failed", "pay now", "retry payment"],
+      "a": "Open the order from My Orders and use the 'Pay Now' button to retry the payment. Your items stay reserved until you complete or cancel the order."
+    },
+    {
+      "id": "account-required",
+      "q": "Do I need an account to shop?",
+      "keywords": ["account", "sign up", "register", "login required"],
+      "a": "You can browse products and build a cart as a guest, but you must be logged in to place an order and to track it afterwards."
+    },
+    {
+      "id": "out-of-stock",
+      "q": "An item I want is out of stock — what now?",
+      "keywords": ["out of stock", "sold out", "restock", "unavailable"],
+      "a": "Stock counts are live. If an item shows as unavailable it is currently sold out — check back later, as popular items are restocked periodically."
+    },
+    {
+      "id": "change-address",
+      "q": "Can I change my shipping address after ordering?",
+      "keywords": ["change address", "wrong address", "edit address", "shipping address"],
+      "a": "The shipping address is locked once an order is placed. If it has not shipped yet, cancel the order and place it again with the correct address."
+    },
+    {
+      "id": "invoice",
+      "q": "How do I get an invoice or receipt?",
+      "keywords": ["invoice", "receipt", "bill", "gst"],
+      "a": "Each order's detail page shows the full payment summary (items, shipping, total) and the payment ID, which serves as your receipt for the order."
+    },
+    {
+      "id": "damaged-item",
+      "q": "I received a damaged or wrong item.",
+      "keywords": ["damaged", "wrong item", "defective", "broken", "not as described"],
+      "a": "We're sorry about that. Start a return within 7 days from the order detail page and select the damaged/wrong-item reason so it is prioritised."
+    },
+    {
+      "id": "contact-support",
+      "q": "How do I contact support?",
+      "keywords": ["contact", "support", "help", "customer care", "email"],
+      "a": "For anything I can't resolve here, reach the support team through the Contact page. Have your Order ID ready so they can help faster."
+    },
+    {
+      "id": "price-match",
+      "q": "Do you offer discounts or price matching?",
+      "keywords": ["discount", "coupon", "offer", "price match", "deal", "sale"],
+      "a": "Active discounts and offers are applied automatically at checkout when eligible. We don't offer manual price matching against other stores."
+    }
+  ]
+}

@@ -1,139 +1,338 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom';
+
+import { useSelector } from 'react-redux';
+
+import {
+  ShoppingBag,
+} from 'lucide-react';
+
 import {
   selectCartItems,
-  selectCartTotalQuantity,
-  selectCartTotalPrice,
-  removeItem,
-  updateQuantity,
-  clearCart,
-} from '../store/slices/cartSlice'
+  selectCartSubtotal,
+} from '../features/cart/cartSlice';
 
-export default function CartPage() {
-  const dispatch = useDispatch()
-  const items = useSelector(selectCartItems)
-  const totalQuantity = useSelector(selectCartTotalQuantity)
-  const totalPrice = useSelector(selectCartTotalPrice)
+import CartItem from '../components/cart/CartItem';
 
+const CartPage = () => {
+  const navigate = useNavigate();
+
+  const items = useSelector(selectCartItems);
+
+  const subtotal = useSelector(selectCartSubtotal);
+
+  const { isAuthenticated } = useSelector(
+    (state) => state.auth
+  );
+
+  const shipping =
+    subtotal > 1000 || subtotal === 0
+      ? 0
+      : 50;
+
+  const total = subtotal + shipping;
+
+  const handleCheckout = () => {
+    navigate(
+      isAuthenticated
+        ? '/checkout'
+        : '/login'
+    );
+  };
+
+  // EMPTY STATE
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
-        <h1 className="text-3xl font-bold text-gray-800">Your Cart is Empty</h1>
-        <p className="text-gray-500">Looks like you haven't added anything yet.</p>
-        <Link
-          to="/products"
-          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+      <div className="bg-[#FAFAF8] min-h-screen">
+
+        <div
+          className="
+            max-w-[900px]
+            mx-auto
+            px-4 md:px-8
+            py-28
+          "
         >
-          Browse Products
-        </Link>
+          <div
+            className="
+              bg-white
+              rounded-[28px]
+              border border-[#ECECEC]
+              p-16 md:p-24
+              text-center
+            "
+          >
+            {/* ICON */}
+            <div
+              className="
+                w-20 h-20
+                rounded-full
+                bg-[#F5F5F5]
+                flex items-center justify-center
+                mx-auto
+              "
+            >
+              <ShoppingBag
+                size={34}
+                className="text-[#777683]"
+              />
+            </div>
+
+            {/* TITLE */}
+            <h1
+              className="
+                mt-10
+                text-4xl md:text-5xl
+                font-semibold
+                tracking-[-0.04em]
+                text-[#191C1D]
+              "
+            >
+              Your cart is empty
+            </h1>
+
+            {/* DESCRIPTION */}
+            <p
+              className="
+                mt-5
+                text-[#777683]
+                text-lg
+                leading-8
+                max-w-xl
+                mx-auto
+              "
+            >
+              Explore curated collections and discover timeless essentials crafted for modern living.
+            </p>
+
+            {/* BUTTON */}
+            <Link
+              to="/products"
+              className="
+                inline-flex
+                items-center justify-center
+                mt-10
+                h-14
+                px-10
+                rounded-[16px]
+                bg-[#191C1D]
+                text-white
+                text-sm
+                font-medium
+                hover:bg-black
+                transition-all
+              "
+            >
+              Browse Collection
+            </Link>
+          </div>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Shopping Cart{' '}
-        <span className="text-base font-normal text-gray-500">
-          ({totalQuantity} {totalQuantity === 1 ? 'item' : 'items'})
-        </span>
-      </h1>
+    <div className="bg-[#FAFAF8] min-h-screen">
 
-      {/* Cart Items */}
-      <div className="flex flex-col gap-4 mb-8">
-        {items.map((item) => (
-          <div
-            key={item._id}
-            className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+      <div
+        className="
+          max-w-[1440px]
+          mx-auto
+          px-4 md:px-8 xl:px-16
+          py-14
+        "
+      >
+        {/* HEADER */}
+        <div className="mb-12">
+
+          <p
+            className="
+              text-[11px]
+              uppercase
+              tracking-[0.18em]
+              font-semibold
+              text-[#8A8A8A]
+              mb-4
+            "
           >
-            {/* Product Image */}
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-20 h-20 object-cover rounded-lg bg-gray-100"
-            />
+            Your Selection
+          </p>
 
-            {/* Product Info */}
-            <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-gray-800 truncate">{item.name}</h2>
-              <p className="text-blue-600 font-medium">${item.price.toFixed(2)}</p>
-            </div>
+          <h1
+            className="
+              text-4xl md:text-5xl
+              font-semibold
+              tracking-[-0.04em]
+              text-[#191C1D]
+            "
+          >
+            Shopping Cart
+          </h1>
+        </div>
 
-            {/* Quantity Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() =>
-                  dispatch(updateQuantity({ id: item._id, quantity: item.quantity - 1 }))
+        {/* GRID */}
+        <div
+          className="
+            grid grid-cols-1
+            lg:grid-cols-[1fr_420px]
+            gap-8
+            items-start
+          "
+        >
+          {/* LEFT */}
+          <div
+            className="
+              bg-white
+              rounded-[28px]
+              border border-[#ECECEC]
+              overflow-hidden
+            "
+          >
+            {items.map((item, index) => (
+              <div
+                key={item.product}
+                className={
+                  index !== items.length - 1
+                    ? 'border-b border-[#F1F1F1]'
+                    : ''
                 }
-                disabled={item.quantity <= 1}
-                className="w-8 h-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
               >
-                −
-              </button>
-              <span className="w-6 text-center font-medium">{item.quantity}</span>
-              <button
-                onClick={() =>
-                  dispatch(updateQuantity({ id: item._id, quantity: item.quantity + 1 }))
-                }
-                disabled={item.quantity >= item.stock}
-                className="w-8 h-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition"
-              >
-                +
-              </button>
-            </div>
+                <CartItem item={item} />
+              </div>
+            ))}
+          </div>
 
-            {/* Item Subtotal */}
-            <p className="w-20 text-right font-semibold text-gray-700">
-              ${(item.price * item.quantity).toFixed(2)}
+          {/* RIGHT SUMMARY */}
+          <div
+            className="
+              sticky top-28
+              bg-white
+              rounded-[28px]
+              border border-[#ECECEC]
+              p-8
+            "
+          >
+            {/* LABEL */}
+            <p
+              className="
+                text-[11px]
+                uppercase
+                tracking-[0.18em]
+                font-semibold
+                text-[#8A8A8A]
+                mb-4
+              "
+            >
+              Order Summary
             </p>
 
-            {/* Remove Button */}
-            <button
-              onClick={() => dispatch(removeItem(item._id))}
-              className="text-red-400 hover:text-red-600 transition text-lg"
-              title="Remove item"
+            {/* TITLE */}
+            <h2
+              className="
+                text-3xl
+                font-semibold
+                tracking-[-0.03em]
+                text-[#191C1D]
+              "
             >
-              ✕
+              Summary
+            </h2>
+
+            {/* ROWS */}
+            <div className="mt-10 space-y-5">
+
+              <div className="flex items-center justify-between">
+                <span className="text-[#777683]">
+                  Subtotal
+                </span>
+
+                <span className="font-medium text-[#191C1D]">
+                  ₹{subtotal.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-[#777683]">
+                  Shipping
+                </span>
+
+                <span className="font-medium text-[#191C1D]">
+                  {shipping === 0
+                    ? 'Free'
+                    : `₹${shipping}`}
+                </span>
+              </div>
+            </div>
+
+            {/* TOTAL */}
+            <div
+              className="
+                mt-8
+                pt-8
+                border-t border-[#ECECEC]
+                flex items-center justify-between
+              "
+            >
+              <span
+                className="
+                  text-xl
+                  font-semibold
+                  text-[#191C1D]
+                "
+              >
+                Total
+              </span>
+
+              <span
+                className="
+                  text-3xl
+                  font-semibold
+                  tracking-[-0.03em]
+                  text-[#191C1D]
+                "
+              >
+                ₹{total.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            {/* CHECKOUT BUTTON */}
+            <button
+              onClick={handleCheckout}
+              className="
+                w-full
+                mt-10
+                h-14
+                rounded-[16px]
+                bg-[#191C1D]
+                text-white
+                text-sm
+                font-medium
+                hover:bg-black
+                transition-all
+              "
+            >
+              Proceed to Checkout
             </button>
+
+            {/* CONTINUE SHOPPING */}
+            <Link
+              to="/products"
+              className="
+                block
+                text-center
+                mt-6
+                text-sm
+                text-[#777683]
+                hover:text-black
+                transition-all
+              "
+            >
+              Continue Shopping
+            </Link>
           </div>
-        ))}
+        </div>
       </div>
-
-      {/* Order Summary */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Order Summary</h2>
-        <div className="flex justify-between text-gray-600 mb-2">
-          <span>Subtotal ({totalQuantity} items)</span>
-          <span>${totalPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-gray-600 mb-4">
-          <span>Shipping</span>
-          <span className="text-green-600">Free</span>
-        </div>
-        <div className="flex justify-between text-lg font-bold text-gray-800 border-t pt-4">
-          <span>Total</span>
-          <span>${totalPrice.toFixed(2)}</span>
-        </div>
-
-        <button
-          className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-          onClick={() => alert('Checkout coming in Week 7!')}
-        >
-          Proceed to Checkout
-        </button>
-
-        <button
-          onClick={() => dispatch(clearCart())}
-          className="mt-3 w-full text-red-500 hover:text-red-700 text-sm transition"
-        >
-          Clear Cart
-        </button>
-      </div>
-
-      {/* Also check out missing placeholder pages */}
-      <p className="text-center text-xs text-gray-400 mt-6">
-        ⚠️ Full cart features (checkout flow) will be built in Week 7.
-      </p>
     </div>
-  )
-}
+  );
+};
+
+export default CartPage;

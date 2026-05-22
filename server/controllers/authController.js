@@ -1,88 +1,162 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+const User = require('../models/User');
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require('../utils/generateToken');
 
-// Helper to generate token
-const generateToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '7d' }
-  );
+/**
+ * Auth controller — Week 3 (Authentication & Authorization)
+ *
+ * Implements Tasks #1, #2, #3, #6, #9.
+ *
+ * Response shape is intentionally `{ token, user: { _id, name,
+ * email, role } }` because the Week 4 React `authSlice` /
+ * `authAPI.js` expect exactly that.
+ */
+
+// Build a safe user object — NEVER leak passwordHash to the client.
+const sanitizeUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
+// Set the refresh token as an httpOnly cookie (Task #6).
+const sendRefreshCookie = (res, refreshToken) => {
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true, // not readable by JS — mitigates XSS token theft
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+    sameSite: 'strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
 };
 
-// Validation rules for register
-exports.validateRegister = [
-  body('name').notEmpty().withMessage('Name is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-];
-
-// POST /auth/register
-exports.register = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+// @desc    Register a new user
+// @route   POST /api/auth/register
+// @access  Public
+exports.register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email already registered' });
+    const exists = await User.findOne({ email });
+    if (exists) {
+      return res
+        .status(409)
+        .json({ success: false, message: 'Email already registered' });
+    }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    // We pass the plain password into `passwordHash`; the User model
+    // pre-save hook bcrypt-hashes it before it is written to MongoDB.
+    const user = await User.create({ name, email, passwordHash: password });
 
-    // Create user
-    const user = await User.create({ name, email, passwordHash });
+    const token = generateAccessToken(user._id);
+    sendRefreshCookie(res, generateRefreshToken(user._id));
 
-    // Return token
-    const token = generateToken(user);
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.status(201).json({
+      success: true,
+      token,
+      user: sanitizeUser(user),
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('REGISTER ERROR >>>', err);   // add this line
+    next(err);
   }
 };
 
-
-// Validation rules for login
-exports.validateLogin = [
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('password').notEmpty().withMessage('Password is required'),
-];
-
-// POST /auth/login
-exports.login = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
+// @desc    Login an existing user
+// @route   POST /api/auth/login
+// @access  Public
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid email or password' });
+    // passwordHash has `select: false`, so explicitly include it.
+    const user = await User.findOne({ email }).select('+passwordHash');
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+    // Identical message whether the email or the password is wrong —
+    // never reveal which, to slow credential-stuffing attacks.
+    if (!user || !(await user.matchPassword(password))) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Invalid email or password' });
+    }
 
-    // Return token
-    const token = generateToken(user);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    const token = generateAccessToken(user._id);
+    sendRefreshCookie(res, generateRefreshToken(user._id));
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: sanitizeUser(user),
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('LOGIN ERROR >>>', err);   // add this line
   }
 };
 
-
-// GET /auth/me
-exports.getMe = async (req, res) => {
+// @desc    Get the logged-in user's profile
+// @route   GET /api/auth/me
+// @access  Private (valid access token required)
+exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('-passwordHash');
-    res.json(user);
+    // req.user is attached by the `protect` middleware.
+    res.status(200).json({
+      success: true,
+      user: sanitizeUser(req.user),
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
+};
+
+// @desc    Issue a fresh access token using the refresh cookie
+// @route   POST /api/auth/refresh
+// @access  Public (needs a valid refresh cookie) — Task #6
+exports.refresh = async (req, res, next) => {
+  try {
+    const token = req.cookies?.refreshToken;
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'No refresh token provided' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (e) {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token invalid or expired — please log in again',
+      });
+    }
+
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'User no longer exists' });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, token: generateAccessToken(user._id) });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Log out — clear the refresh cookie
+// @route   POST /api/auth/logout
+// @access  Public
+exports.logout = async (req, res) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.status(200).json({ success: true, message: 'Logged out' });
 };
