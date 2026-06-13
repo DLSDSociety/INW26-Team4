@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    margin: 0;
+    font-family: 'Geist', system-ui, sans-serif;
+    background-color: #f8f9fa;
+    color: #191c1d;
+  }
+}
+
+@layer components {
+  /* Editorial label — small, all-caps, tracked */
+  .label-editorial {
+    @apply text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-2;
+  }
+
+  /* Animated underline link — for nav */
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: '';
+    @apply absolute left-0 -bottom-1 h-px w-0 bg-primary transition-all duration-300;
+  }
+  .link-underline:hover::after,
+  .link-underline.active::after {
+    @apply w-full;
+  }
+
+  .editorial-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: #8a8a8a;
+}
+
+.editorial-heading {
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: #191c1d;
+}
+
+.editorial-body {
+  font-size: 18px;
+  line-height: 1.9;
+  color: #777683;
+}
+
+}
