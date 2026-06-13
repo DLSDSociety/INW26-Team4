@@ -1,7 +1,5 @@
 # E-Commerce Web Application (MERN)
- 
-Live demo: https://your-store.netlify.app
-API:       https://your-api.onrender.com
+
  
 ## Features
   - Auth (JWT, roles), product search/filter/sort,
